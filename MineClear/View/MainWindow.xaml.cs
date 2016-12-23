@@ -11,8 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
-
+using MineClear.ModelView;
 namespace MineClear
 {
     /// <summary>
@@ -23,9 +22,13 @@ namespace MineClear
         public MainWindow()
         {
             InitializeComponent();
-            
-            
-            
+            this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
+
+        
+        private void diffSel(object sender, RoutedEventArgs e)
+        {
+            ModeleView.DifficultySlect(sender, e);
         }
         
     }

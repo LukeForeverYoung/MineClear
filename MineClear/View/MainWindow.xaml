@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MineClear"
         mc:Ignorable="d"
+        Name="mainWindow"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
         <Grid.RowDefinitions>
@@ -13,10 +14,10 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0" Name="Menu">
             <MenuItem Name="NewGameStart" Header="新游戏">
-                <MenuItem Header="初级" Tag="1" Click="DifficutySelect"/>
-                <MenuItem Header="中级" Tag="2" Click="DifficutySelect"/>
-                <MenuItem Header="高级" Tag="3" Click="DifficutySelect"/>
-                <MenuItem Header="自定义" Tag="4" Click="DifficutySelect"/>
+                <MenuItem Header="初级" Tag="1" Click="diffSel"/>
+                <MenuItem Header="中级" Tag="2" Click="diffSel"/>
+                <MenuItem Header="高级" Tag="3" Click="diffSel"/>
+                <MenuItem Header="自定义" Tag="4" Click="diffSel"/>
             </MenuItem>
             <MenuItem Header="暂停"/>
             <MenuItem Header="排名"/>
