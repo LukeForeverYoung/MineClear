@@ -23,6 +23,10 @@ namespace MineClear
         public MainWindow()
         {
             InitializeComponent();
+            
+            
+            
         }
+        
     }
 }

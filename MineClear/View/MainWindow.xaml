@@ -1,0 +1,25 @@
+﻿<Window x:Class="MineClear.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MineClear"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0" Name="Menu">
+            <MenuItem Name="NewGameStart" Header="新游戏">
+                <MenuItem Header="初级" Tag="1" Click="DifficutySelect"/>
+                <MenuItem Header="中级" Tag="2" Click="DifficutySelect"/>
+                <MenuItem Header="高级" Tag="3" Click="DifficutySelect"/>
+                <MenuItem Header="自定义" Tag="4" Click="DifficutySelect"/>
+            </MenuItem>
+            <MenuItem Header="暂停"/>
+            <MenuItem Header="排名"/>
+        </Menu>
+    </Grid>
+</Window>
