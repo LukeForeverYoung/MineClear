@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 
 namespace MineClear.Model
 {
-    class Model
+    public class ModelData
     {
         class Map
         {
             //地图信息
-            int[,] mineMap;
+            public int[,] mineMap;
+            
             int width;
             int height;
             int mineNum;
-
+            
 
             //用线段树维护区间中未被作为雷的区块数量，完全避免随机重复问题，查找复杂度log(n)。
             
@@ -76,6 +77,7 @@ namespace MineClear.Model
                 for(int i=0;i<mineNum;i++)
                 {
                     int pos = rnd.Next(1, width * height - i + 1);
+                    //Console.WriteLine(pos);
                     pos = sT.setMine(pos);
                     int x = pos % width;
                     int y = pos / width;
@@ -104,18 +106,37 @@ namespace MineClear.Model
                                             sum++;
                             mineMap[i, j] = sum;
                         }
+                //test show mine map in console
+                /*
+                for (int i = 0; i < height; i++)
+                {
+                    for (int j = 0; j < width; j++)
+                        Console.Write(mineMap[i, j]);
+                    Console.WriteLine();
+                }
+                */
                 //TODO
             } 
         }
         static readonly int[,] diffNum = { { 9, 9,10 },  { 16, 16,40 }, { 30, 16,99 } };
-        int width;
-        int height;
-        int mineNum;
+        public int width;
+        public int height;
+        public int mineNum;
+        public int[,] mineMap;
+        public int size = 20;
         public void setDiff(int diff)
         {
+            diff--;
             width = diffNum[diff, 0];
             height = diffNum[diff, 1];
             mineNum = diffNum[diff, 2];
+            Map map = new Map(width,height,mineNum);
+            mineMap = new int[height, width];
+            
+            for (int i = 0; i < height; i++)
+                for (int j = 0; j < width; j++)
+                    mineMap[i, j] = map.mineMap[i, j];
+
         }
 
     }
