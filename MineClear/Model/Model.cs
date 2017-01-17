@@ -8,6 +8,12 @@ namespace MineClear.Model
 {
     public class ModelData
     {
+        static readonly int[,] diffNum = { { 9, 9, 10 }, { 16, 16, 40 }, { 30, 16, 99 } };
+        static public int width;
+        static public int height;
+        static public int mineNum;
+        static public int[,] mineMap;
+        static public int size = 30;
         class Map
         {
             //地图信息
@@ -118,12 +124,46 @@ namespace MineClear.Model
                 //TODO
             } 
         }
-        static readonly int[,] diffNum = { { 9, 9,10 },  { 16, 16,40 }, { 30, 16,99 } };
-        public int width;
-        public int height;
-        public int mineNum;
-        public int[,] mineMap;
-        public int size = 20;
+        internal class BfsSolution
+        {
+            
+            struct node
+            {
+                int i, j;
+                int step;
+                public node(int i,int j)
+                {
+                    this.i = i;
+                    this.j = j;
+                    this.step = 0;
+                }
+            }
+            class SortedSet : IComparer<node>
+            {
+                int IComparer<node>.Compare(node x, node y)
+                {
+                    throw new NotImplementedException();
+                    
+                }
+            }
+            bool[,] vis;
+            
+            SortedSet<node> Q;
+            
+            public void bfs(int i,int j)
+            {
+                node now = new node(i, j);
+                Q.Add(now);
+                while(Q.)
+            }
+            public BfsSolution()
+            {
+                vis = new bool[height, width];
+                for (int i = 0; i < height; i++)
+                    for (int j = 0; j < width; j++)
+                        vis[i, j] = false;
+            }
+        }
         public void setDiff(int diff)
         {
             diff--;

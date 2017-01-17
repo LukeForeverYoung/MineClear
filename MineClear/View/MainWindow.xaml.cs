@@ -22,34 +22,45 @@ namespace MineClear
     /// </summary>
     public partial class MainWindow : Window
     {
+        protected struct BlockInf
+        {
+            public int i, j;
+            public int Tag;
+            public bool IsClicked;
+            public BlockInf(int i,int j,int Tag)
+            {
+                this.i = i;
+                this.j = j;
+                this.Tag = Tag;
+                IsClicked = false;
+            }
+        }
         public ModelData model;
         BitmapImage[] bitImage = new BitmapImage[10];
         Image loadImg;
         bool clickFlag;
+        Button[,] btn;
         public MainWindow()
         {
             InitializeComponent();
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.SizeToContent = SizeToContent.WidthAndHeight;
             model = new ModelData();
-            
             clickFlag = false;
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i <= 8; i++)
             {
                 bitImage[i] = new BitmapImage(new Uri("pack://application:,,,/Source/" + (i + 1).ToString() + ".jpg"));
                 Console.WriteLine("Source/" + (i+1).ToString()+".jpg");
             }
-                
-            bitImage[8] = new BitmapImage(new Uri("pack://application:,,,/Source/mine.jpg"));
+            bitImage[9] = new BitmapImage(new Uri("pack://application:,,,/Source/mine.jpg"));
         }
-
-        
         private void diffSel(object sender, RoutedEventArgs e)
         {
             
             ModeleView.DifficultySlect(sender, e,model);
             clickFlag = true;
-            Button[,] btn = new Button[model.height, model.width];
+            gameMap.Children.Clear();
+            btn = new Button[model.height, model.width];
             gameMap.Width = model.width * model.size;
             gameMap.Height = model.height * model.size;
             
@@ -57,7 +68,8 @@ namespace MineClear
                 for (int j = 0; j < model.width; j++)
                 {
                     btn[i, j] = new Button();
-                    btn[i, j].Tag = model.mineMap[i, j];
+                    BlockInf Tag = new BlockInf(i, j, model.mineMap[i, j]);
+                    btn[i, j].Tag = Tag;
                     /*
                     img[0] = new Image();
                     img[0].Source = new BitmapImage(new Uri("pack://application:,,,/Source/mine.jpg"));
@@ -66,31 +78,33 @@ namespace MineClear
                                             //btn[i, j].Tag.ToString();
                     */
                     btn[i, j].Click += Btn_Click;
+                    btn[i, j].MouseRightButtonDown += Btn_Right_Click;
                     btn[i, j].Width = model.size;
                     btn[i, j].Height = model.size;
+                    btn[i, j].SetValue(Button.StyleProperty, Application.Current.Resources["neverClick"]);
                     btn[i, j].Margin = new Thickness(j * model.size, i * model.size,0,0);
                     gameMap.Children.Add(btn[i, j]);
                     //Thread.Sleep(10);
-                    
                 }
-            
         }
-        private void Btn_Click(object sender, RoutedEventArgs e)
+        internal void setBlockValue(int i,int j)
         {
-            if(!clickFlag)
+            setBlockValue(btn[i, j]);
+        }
+        internal void setBlockValue(Button btn)
+        {
+            btn.Content = null;
+            Console.WriteLine(btn.Tag);
+            BlockInf Tag = (BlockInf)btn.Tag;
+            if (Tag.Tag == 0)
             {
-                MessageBox.Show("请先开始游戏");
+                btn.SetValue(Button.StyleProperty, Application.Current.Resources["Click0"]);
                 return;
             }
-           
-            Button btn = sender as Button;
-            Console.WriteLine(btn.Tag);
-            if ((int)btn.Tag == 0)
-                return;
-            if ((int)btn.Tag == -1)
+            if (Tag.Tag == -1)
             {
                 loadImg = new Image();
-                loadImg.Source = bitImage[8];
+                loadImg.Source = bitImage[9];
                 btn.Content = loadImg;
                 MessageBox.Show("Game over!");
                 clickFlag = false;
@@ -101,7 +115,30 @@ namespace MineClear
                 loadImg.Source = bitImage[(int)btn.Tag - 1];
                 btn.Content = loadImg;
             }
-            
+        }
+
+        private void Btn_Right_Click(object sender, RoutedEventArgs e)
+        {
+            Button btn = sender as Button;
+            btn.SetValue(Button.StyleProperty, Application.Current.Resources["Click0"]);
+            loadImg = new Image();
+            loadImg.Source = bitImage[8];
+            btn.Content = loadImg;
+        }
+        private void Btn_Click(object sender, RoutedEventArgs e)
+        {
+            if(!clickFlag)
+            {
+                MessageBox.Show("请先开始游戏");
+                return;
+            }
+            Button btn = sender as Button;
+            setBlockValue(btn);
+            if(((BlockInf)btn.Tag).Tag==0)
+            {
+                ModelData.BfsSolution bfs = new ModelData.BfsSolution();
+                bfs.bfs(((BlockInf)btn.Tag).i, ((BlockInf)btn.Tag).j);
+            }
         }
     }
 }

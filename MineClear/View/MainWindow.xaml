@@ -8,6 +8,7 @@
         Name="mainWindow"
         Title="MainWindow" 
         MinHeight="30" MinWidth="52">
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
