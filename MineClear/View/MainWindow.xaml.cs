@@ -22,10 +22,20 @@ namespace MineClear
     /// </summary>
     public partial class MainWindow : Window
     {
+        static bool debugFlag = false;
+        private void setDebugMode(Object sender,RoutedEventArgs e)
+        {
+            if (debugFlag)
+                debugFlag = false;
+            else
+                debugFlag = true;
+            MessageBox.Show("重新开始游戏生效");
+        }
         protected struct BlockInf
         {
             public int i, j;
             public int Tag;
+            public bool RedFlagSet;
             public bool IsClicked;
             public BlockInf(int i,int j,int Tag)
             {
@@ -33,13 +43,24 @@ namespace MineClear
                 this.j = j;
                 this.Tag = Tag;
                 IsClicked = false;
+                RedFlagSet = false;
             }
         }
+        static int ClickCounter;
+        internal static void AddClickCounter(int value)
+        {
+            ClickCounter += value;
+            if(ClickCounter==(ModelData.width*ModelData.height))
+            {
+                CheckMap();
+            }
+        }
+        
         public ModelData model;
-        BitmapImage[] bitImage = new BitmapImage[10];
-        Image loadImg;
-        bool clickFlag;
-        Button[,] btn;
+        static BitmapImage[] bitImage = new BitmapImage[10];
+        static Image loadImg;
+        static bool clickFlag;
+        static Button[,] btn;
         public MainWindow()
         {
             InitializeComponent();
@@ -56,19 +77,19 @@ namespace MineClear
         }
         private void diffSel(object sender, RoutedEventArgs e)
         {
-            
             ModeleView.DifficultySlect(sender, e,model);
             clickFlag = true;
+            ClickCounter = 0;
             gameMap.Children.Clear();
-            btn = new Button[model.height, model.width];
-            gameMap.Width = model.width * model.size;
-            gameMap.Height = model.height * model.size;
+            btn = new Button[ModelData.height, ModelData.width];
+            gameMap.Width = ModelData.width * ModelData.size;
+            gameMap.Height = ModelData.height * ModelData.size;
             
-            for (int i = 0; i < model.height; i++)
-                for (int j = 0; j < model.width; j++)
+            for (int i = 0; i < ModelData.height; i++)
+                for (int j = 0; j < ModelData.width; j++)
                 {
                     btn[i, j] = new Button();
-                    BlockInf Tag = new BlockInf(i, j, model.mineMap[i, j]);
+                    BlockInf Tag = new BlockInf(i, j, ModelData.mineMap[i, j]);
                     btn[i, j].Tag = Tag;
                     /*
                     img[0] = new Image();
@@ -79,28 +100,33 @@ namespace MineClear
                     */
                     btn[i, j].Click += Btn_Click;
                     btn[i, j].MouseRightButtonDown += Btn_Right_Click;
-                    btn[i, j].Width = model.size;
-                    btn[i, j].Height = model.size;
+                    btn[i, j].Width = ModelData.size;
+                    btn[i, j].Height = ModelData.size;
                     btn[i, j].SetValue(Button.StyleProperty, Application.Current.Resources["neverClick"]);
-                    btn[i, j].Margin = new Thickness(j * model.size, i * model.size,0,0);
+                    //debug
+                    if(debugFlag)
+                        if(ModelData.mineMap[i, j] == -1)
+                            btn[i, j].BorderBrush = Brushes.Pink;
+                    //
+                    btn[i, j].Margin = new Thickness(j * ModelData.size, i * ModelData.size,0,0);
                     gameMap.Children.Add(btn[i, j]);
                     //Thread.Sleep(10);
                 }
         }
-        internal void setBlockValue(int i,int j)
+        static internal void setBlockValue(int i,int j)
         {
             setBlockValue(btn[i, j]);
         }
-        internal void setBlockValue(Button btn)
+        static internal void setBlockValue(Button btn)
         {
-            btn.Content = null;
-            Console.WriteLine(btn.Tag);
+          
+            //Console.WriteLine(btn.Tag);
             BlockInf Tag = (BlockInf)btn.Tag;
-            if (Tag.Tag == 0)
-            {
-                btn.SetValue(Button.StyleProperty, Application.Current.Resources["Click0"]);
+            BlockInf bf = (BlockInf)btn.Tag;
+            if (bf.IsClicked||bf.RedFlagSet)
                 return;
-            }
+            bf.IsClicked = true;
+            btn.Tag = bf;
             if (Tag.Tag == -1)
             {
                 loadImg = new Image();
@@ -108,11 +134,18 @@ namespace MineClear
                 btn.Content = loadImg;
                 MessageBox.Show("Game over!");
                 clickFlag = false;
+                return;
+            }
+            AddClickCounter(1);
+            if (Tag.Tag == 0)
+            {
+                btn.SetValue(Button.StyleProperty, Application.Current.Resources["Click0"]);
+                return;
             }
             else
             {
                 loadImg = new Image();
-                loadImg.Source = bitImage[(int)btn.Tag - 1];
+                loadImg.Source = bitImage[((BlockInf)btn.Tag).Tag - 1];
                 btn.Content = loadImg;
             }
         }
@@ -121,8 +154,24 @@ namespace MineClear
         {
             Button btn = sender as Button;
             btn.SetValue(Button.StyleProperty, Application.Current.Resources["Click0"]);
+            BlockInf bf = (BlockInf)btn.Tag;
             loadImg = new Image();
-            loadImg.Source = bitImage[8];
+            if (bf.RedFlagSet)
+            {
+                bf.RedFlagSet = false;
+                btn.Tag = bf;
+                AddClickCounter(-1);
+                btn.SetValue(Button.StyleProperty, Application.Current.Resources["neverClick"]);
+            }
+            else
+            {
+                if (bf.IsClicked)
+                    return;
+                bf.RedFlagSet = true;
+                btn.Tag = bf;
+                AddClickCounter(1);
+                loadImg.Source = bitImage[8];
+            }
             btn.Content = loadImg;
         }
         private void Btn_Click(object sender, RoutedEventArgs e)
@@ -133,12 +182,38 @@ namespace MineClear
                 return;
             }
             Button btn = sender as Button;
+            BlockInf bf = (BlockInf)btn.Tag;
+            if (bf.IsClicked)
+                return;
+            if (bf.RedFlagSet)
+            {
+                bf.RedFlagSet = false;
+                btn.Tag = bf;
+                AddClickCounter(-1);
+            }
             setBlockValue(btn);
+
             if(((BlockInf)btn.Tag).Tag==0)
             {
                 ModelData.BfsSolution bfs = new ModelData.BfsSolution();
                 bfs.bfs(((BlockInf)btn.Tag).i, ((BlockInf)btn.Tag).j);
             }
+        }
+        static void CheckMap()
+        {
+            for(int i=0;i<ModelData.height;i++)
+                for(int j=0;j<ModelData.width;j++)
+                {
+                    BlockInf bf = (BlockInf)btn[i, j].Tag;
+                    if((bf.RedFlagSet&&bf.Tag!=-1)||(!bf.RedFlagSet&&bf.Tag==-1))
+                    {
+                        MessageBox.Show("插错旗了");
+                        Console.WriteLine(bf.RedFlagSet + " " + bf.Tag);
+                        btn[i, j].BorderBrush = Brushes.Red;
+                    }
+                }
+            MessageBox.Show("游戏胜利");
+            clickFlag = false;
         }
     }
 }

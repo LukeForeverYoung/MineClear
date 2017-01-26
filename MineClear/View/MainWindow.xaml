@@ -23,6 +23,7 @@
             </MenuItem>
             <MenuItem Header="暂停"/>
             <MenuItem Header="排名"/>
+            <MenuItem Header="debugMode" Click="setDebugMode"/>
         </Menu>
         <Canvas Name="gameMap" Grid.Row="1" Margin="20,0,20,20"
                 MinHeight="150"

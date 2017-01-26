@@ -9,23 +9,22 @@ namespace MineClear.Model
     public class ModelData
     {
         static readonly int[,] diffNum = { { 9, 9, 10 }, { 16, 16, 40 }, { 30, 16, 99 } };
+        
         static public int width;
         static public int height;
         static public int mineNum;
         static public int[,] mineMap;
+        static bool[,] vis;
         static public int size = 30;
         class Map
         {
             //地图信息
-            public int[,] mineMap;
-            
+            public int[,] mineMap;//-1为雷
+   
             int width;
             int height;
             int mineNum;
-            
-
             //用线段树维护区间中未被作为雷的区块数量，完全避免随机重复问题，查找复杂度log(n)。
-            
             class segTree 
             {
                 struct tree
@@ -126,35 +125,97 @@ namespace MineClear.Model
         }
         internal class BfsSolution
         {
-            
-            struct node
+            int[,] dir = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+            struct node :IComparable
             {
-                int i, j;
-                int step;
+                public int i, j;
+                public int step;
                 public node(int i,int j)
                 {
                     this.i = i;
                     this.j = j;
                     this.step = 0;
                 }
+                public int CompareTo(Object obj)
+                {
+                    node x = (node)obj;
+                    if (x.i == i && x.j == j && x.step == step)
+                        return 0;
+                    if (x.step == step)
+                    {
+                        if (x.i == i)
+                            return x.j - j;
+                        return x.i - i;
+                    }
+                    return x.step - step;
+                    throw new NotImplementedException();
+                }
             }
+            /*
             class SortedSet : IComparer<node>
             {
                 int IComparer<node>.Compare(node x, node y)
                 {
+                    if (x.step < y.step)
+                        return 1;
+                    return 0;
                     throw new NotImplementedException();
-                    
                 }
             }
-            bool[,] vis;
+            */
             
+            bool ok(node x)
+            {
+                if (x.i < 0 || x.j < 0 || x.i >= height || x.j >= width)
+                {
+                    //Console.WriteLine("范围超出");
+                    return false;
+                }
+                    
+                if (vis[x.i, x.j])
+                {
+                    //Console.WriteLine("被访问过");
+                    return false;
+                }
+                    
+                if (mineMap[x.i, x.j] == -1)
+                {
+                    //Console.WriteLine("雷");
+                    return false;
+                }
+                    
+                return true;
+            }
             SortedSet<node> Q;
-            
             public void bfs(int i,int j)
             {
-                node now = new node(i, j);
+                Q = new SortedSet<node>();
+                node now = new node(i, j),next;
+                vis[now.i, now.j] = true;
                 Q.Add(now);
-                while(Q.)
+                while(Q.Count!=0)
+                {
+                    now = Q.Max;
+                    if (Q.Remove(now)) 
+                        Console.WriteLine("yes");
+                    Console.WriteLine(Q.Count+" "+now.i+" "+now.j+" "+now.step);
+                    MainWindow.setBlockValue(now.i, now.j);
+                    if (mineMap[now.i, now.j] != 0)//空格(继续拓展)，非空格(停止)
+                        continue;
+                    for (int d=0;d<4;d++)
+                    {
+                        next = now;
+                        next.step++;
+                        next.i += dir[d, 1];
+                        next.j += dir[d, 0];
+                        //Console.WriteLine("next" + next.i +" "+ next.j);
+                        if(ok(next))
+                        {
+                            vis[next.i, next.j] = true;
+                            Q.Add(next);
+                        }
+                    }
+                }
             }
             public BfsSolution()
             {
@@ -172,10 +233,14 @@ namespace MineClear.Model
             mineNum = diffNum[diff, 2];
             Map map = new Map(width,height,mineNum);
             mineMap = new int[height, width];
-            
+            vis = new bool[height, width];
             for (int i = 0; i < height; i++)
                 for (int j = 0; j < width; j++)
+                {
+                    vis[i, j] = false;
                     mineMap[i, j] = map.mineMap[i, j];
+                }
+                    
 
         }
 
