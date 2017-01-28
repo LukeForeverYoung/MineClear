@@ -125,7 +125,7 @@ namespace MineClear.Model
         }
         internal class BfsSolution
         {
-            int[,] dir = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+            int[,] dir = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
             struct node :IComparable
             {
                 public int i, j;
@@ -202,7 +202,7 @@ namespace MineClear.Model
                     MainWindow.setBlockValue(now.i, now.j);
                     if (mineMap[now.i, now.j] != 0)//空格(继续拓展)，非空格(停止)
                         continue;
-                    for (int d=0;d<4;d++)
+                    for (int d=0;d<8;d++)
                     {
                         next = now;
                         next.step++;
