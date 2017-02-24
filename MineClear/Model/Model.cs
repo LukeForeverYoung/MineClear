@@ -9,13 +9,12 @@ namespace MineClear.Model
     public class ModelData
     {
         static readonly int[,] diffNum = { { 9, 9, 10 }, { 16, 16, 40 }, { 30, 16, 99 } };
-        
-        static public int width;
-        static public int height;
-        static public int mineNum;
+        public int width;
+        public int height;
+        public int mineNum;
         static public int[,] mineMap;
         static bool[,] vis;
-        static public int size = 30;
+        public int size = 30;
         class Map
         {
             //地图信息
@@ -77,7 +76,7 @@ namespace MineClear.Model
                 int[] mineList = new int[width * height];
                 for (int i = 0; i < mineList.Length; i++)
                     mineList[i] = 0;
-                segTree sT = new segTree(width * height);
+                segTree sT = new segTree(this.width * this.height);
                 Random rnd = new Random();
                 for(int i=0;i<mineNum;i++)
                 {
@@ -123,8 +122,14 @@ namespace MineClear.Model
                 //TODO
             } 
         }
-        internal class BfsSolution
+        public void SpreadBlock(int i,int j)
         {
+            BfsSolution bs = new BfsSolution(this);
+            bs.bfs(i,j);
+        }
+        class BfsSolution
+        {
+            ModelData Outer;
             int[,] dir = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 }, { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
             struct node :IComparable
             {
@@ -166,7 +171,7 @@ namespace MineClear.Model
             
             bool ok(node x)
             {
-                if (x.i < 0 || x.j < 0 || x.i >= height || x.j >= width)
+                if (x.i < 0 || x.j < 0 || x.i >= Outer.height || x.j >= Outer.width)
                 {
                     //Console.WriteLine("范围超出");
                     return false;
@@ -217,11 +222,12 @@ namespace MineClear.Model
                     }
                 }
             }
-            public BfsSolution()
+            public BfsSolution(ModelData _Outer)
             {
-                vis = new bool[height, width];
-                for (int i = 0; i < height; i++)
-                    for (int j = 0; j < width; j++)
+                Outer = _Outer;
+                vis = new bool[Outer.height, Outer.width];
+                for (int i = 0; i < Outer.height; i++)
+                    for (int j = 0; j < Outer.width; j++)
                         vis[i, j] = false;
             }
         }
@@ -240,9 +246,6 @@ namespace MineClear.Model
                     vis[i, j] = false;
                     mineMap[i, j] = map.mineMap[i, j];
                 }
-                    
-
         }
-
     }
 }
